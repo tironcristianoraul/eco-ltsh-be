@@ -7,12 +7,11 @@ import mainRouter from "../router";
 import cookieParser from "cookie-parser";
 import customLogger from "../utils/request_logger";
 import { RateLimiterMemory } from "rate-limiter-flexible";
-import { getRes } from "../functions/body";
 
 const createServer = () => {
   const router = express();
 
-  const allowedOrigins = ["http://127.0.0.1:5173", ""];
+  const allowedOrigins = ["http://127.0.0.1:5173", "http://localhost:5173"];
 
   // CORS Policy Settings
   router.use(
