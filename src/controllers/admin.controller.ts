@@ -95,9 +95,26 @@ const logout = async (req: Request, res: Response) => {
   }
 };
 
+const uploadPhoto = async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(500).json({
+        error: "You either did not upload anything or there was an error!",
+      });
+    }
+
+    return res.status(200).json({ message: "Successfully uploaded image!" });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Something went wrong!",
+    });
+  }
+};
+
 const controller = {
   login,
   logout,
+  uploadPhoto,
 };
 
 export default controller;
