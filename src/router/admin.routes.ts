@@ -48,18 +48,17 @@ adminRouter.post(
   "/upload",
   auth(["admin"]),
   (req, res, next) => {
-    upload.single("file")(req, res, (err) => {
+    upload.array("files", 10)(req, res, (err) => {
       if (err instanceof multer.MulterError) {
-        // A Multer error occurred when uploading
         return res.status(400).json({ error: err.message });
       } else if (err) {
-        // An unknown error occurred when uploading
         return res.status(400).json({ error: err.message });
       }
       next();
     });
   },
-  controller.uploadPhoto
+  payload(payloads.admin.uploadImages),
+  controller.uploadPost
 );
 
 adminRouter.use("/auth", adminAuthRouter);

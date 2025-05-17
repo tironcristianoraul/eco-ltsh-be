@@ -6,6 +6,8 @@ import adminModel from "../database/models/admin.model";
 import * as jwt from "jsonwebtoken";
 import { Token } from "../interfaces/token";
 import env from "../config";
+import postModel from "../database/models/post.model";
+import { Types } from "mongoose";
 
 const login = async (req: Request, res: Response) => {
   try {
@@ -95,15 +97,37 @@ const logout = async (req: Request, res: Response) => {
   }
 };
 
-const uploadPhoto = async (req: Request, res: Response) => {
+const uploadPost = async (req: Request, res: Response) => {
   try {
-    if (!req.file) {
-      return res.status(500).json({
-        error: "You either did not upload anything or there was an error!",
-      });
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: "No images uploaded." });
     }
 
-    return res.status(200).json({ message: "Successfully uploaded image!" });
+    const { title, content, category } = JSON.parse(req.body.data);
+
+    const imageNames = files.map((file) => file.filename);
+
+    const post = new postModel({
+      _id: new Types.ObjectId(),
+      imageNames,
+      title,
+      content,
+      category,
+    });
+
+    await post
+      .save()
+      .then(() => {
+        return res.status(200).json({
+          message: "Successfully uploaded post!",
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          error: `${e}`,
+        });
+      });
   } catch (error) {
     return res.status(500).json({
       error: "Something went wrong!",
@@ -114,7 +138,7 @@ const uploadPhoto = async (req: Request, res: Response) => {
 const controller = {
   login,
   logout,
-  uploadPhoto,
+  uploadPost,
 };
 
 export default controller;
