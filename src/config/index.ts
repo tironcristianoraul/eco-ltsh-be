@@ -30,7 +30,10 @@ const env = {
         : `${DATABASE}?retryWrites=true&w=majority&appName=main`,
     mode: MODE,
     encryption_key: ENCRYPTION_KEY,
-    url: MODE === "testing" ? `http://127.0.0.1:${PORT}` : "",
+    url:
+      MODE === "testing"
+        ? `http://127.0.0.1:${PORT}`
+        : `http://127.0.0.1:${PORT}`,
     // superadmins: SUPERADMINS.split("|"),
   },
   jwt: {

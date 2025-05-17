@@ -1,11 +1,12 @@
 import express from "express";
 import adminRouter from "./admin.routes";
-import process from "node:process";
-import path from "node:path";
+import guestRouter from "./guest.routes";
 
 const mainRouter = express.Router();
 
 mainRouter.use("/admin", adminRouter);
+mainRouter.use("/guest", guestRouter);
+
 mainRouter.use("/uploads", express.static("uploads"));
 
 export default mainRouter;

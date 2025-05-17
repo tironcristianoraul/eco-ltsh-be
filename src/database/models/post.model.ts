@@ -27,4 +27,4 @@ postSchema.pre<IPost>("save", async function (next) {
   next();
 });
 
-export default model("Post", postSchema);
+export default model<IPost>("Post", postSchema);
