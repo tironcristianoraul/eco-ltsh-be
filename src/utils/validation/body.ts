@@ -22,13 +22,20 @@ export const payload =
     }
   };
 
-const { email, password } = regex;
+const { password } = regex;
 
 export const payloads = {
   admin: {
     login: Joi.object({
-      email: Joi.string().pattern(email).required(),
-      password: Joi.string().pattern(password).required(),
+      email: Joi.string().email().required().messages({
+        "string.email": "Please enter a valid email address.",
+        "string.empty": "Email is required.",
+      }),
+      password: Joi.string().pattern(password).required().messages({
+        "string.pattern.base":
+          "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.",
+        "string.empty": "Password is required.",
+      }),
     }),
   },
 };
