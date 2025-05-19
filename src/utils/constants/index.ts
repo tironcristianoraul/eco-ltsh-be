@@ -13,7 +13,7 @@ const allowedExtensionsUppercase = allowedExtensionsLowercase.map((ext) =>
 
 const allowedExtensions = [
   ...allowedExtensionsLowercase,
-  allowedExtensionsUppercase,
+  ...allowedExtensionsUppercase,
 ];
 
 const MAX_TOTAL_SIZE = 100 * 1024 * 1024;
