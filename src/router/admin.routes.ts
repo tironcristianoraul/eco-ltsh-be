@@ -4,6 +4,7 @@ import auth from "../functions/auth";
 import { payload, payloads } from "../utils/validation/body";
 import multer from "multer";
 import { allowedExtensions, MAX_TOTAL_SIZE } from "../utils/constants";
+import { validateParams, Params } from "../utils/validation/params";
 
 const storage = multer.diskStorage({
   destination: "uploads/",
@@ -67,6 +68,13 @@ adminRouter.post(
   },
   payload(payloads.admin.uploadImages),
   controller.uploadPost
+);
+
+adminRouter.delete(
+  "/post/:id",
+  auth(["admin"]),
+  validateParams(Params.posts.id),
+  controller.deletePost
 );
 
 adminRouter.use("/auth", adminAuthRouter);

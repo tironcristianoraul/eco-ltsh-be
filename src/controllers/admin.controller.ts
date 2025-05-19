@@ -8,6 +8,7 @@ import { Token } from "../interfaces/token";
 import env from "../config";
 import postModel from "../database/models/post.model";
 import { Types } from "mongoose";
+import * as fs from "fs/promises";
 
 const login = async (req: Request, res: Response) => {
   try {
@@ -119,8 +120,83 @@ const uploadPost = async (req: Request, res: Response) => {
     await post
       .save()
       .then(() => {
-        return res.status(200).json({
+        return res.status(201).json({
           message: "Successfully uploaded post!",
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          error: `${e}`,
+        });
+      });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Something went wrong!",
+    });
+  }
+};
+
+const deletePost = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const post = await postModel.findById({ _id: id });
+
+    if (!post) return res.status(404).json({ error: "Post not found!" });
+
+    await post
+      .deleteOne()
+      .then(async () => {
+        const images = post.imageNames;
+        for (const img of images)
+          await fs.unlink(`uploads/${img}`).catch(() => {});
+        res.status(200).json({ message: "Post deleted successfully!" });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          error: `Post could not be deleted! Reason: ${e}`,
+        });
+      });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Something went wrong!",
+    });
+  }
+};
+
+const updatePost = async (req: Request, res: Response) => {
+  try {
+    const files = req.files as Express.Multer.File[];
+    const { title, content, category, photosToDelete } = JSON.parse(
+      req.body.data
+    );
+    const imageNames = files.map((file) => file.filename);
+    const { id } = req.params;
+    const post = await postModel.findById({ _id: id });
+
+    if (!post) return res.status(404).json({ error: "Post not found!" });
+
+    if (files && files.length) {
+      for (const img of imageNames) post.imageNames.push(img);
+    }
+
+    if ((photosToDelete as string[]).length) {
+      for (const img of imageNames)
+        await fs.unlink(`uploads/${img}`).catch(() => {});
+      post.imageNames = post.imageNames.filter((el) =>
+        photosToDelete.includes(el)
+      );
+    }
+
+    post.title = title ? title : post.title;
+    post.content = content ? content : post.content;
+    post.category = category ? category : post.category;
+
+    await post
+      .save({ validateModifiedOnly: true })
+      .then(() => {
+        return res.status(200).json({
+          message: "Successfully updated post!",
         });
       })
       .catch((e) => {
@@ -139,6 +215,8 @@ const controller = {
   login,
   logout,
   uploadPost,
+  deletePost,
+  updatePost,
 };
 
 export default controller;
