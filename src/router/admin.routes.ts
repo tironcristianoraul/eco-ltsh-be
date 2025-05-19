@@ -3,7 +3,7 @@ import controller from "../controllers/admin.controller";
 import auth from "../functions/auth";
 import { payload, payloads } from "../utils/validation/body";
 import multer from "multer";
-import { allowedExtensions } from "../utils/constants";
+import { allowedExtensions, MAX_TOTAL_SIZE } from "../utils/constants";
 
 const storage = multer.diskStorage({
   destination: "uploads/",
@@ -49,6 +49,14 @@ adminRouter.post(
   auth(["admin"]),
   (req, res, next) => {
     upload.array("files", 10)(req, res, (err) => {
+      if (Array.isArray(req.files) && req.files.length) {
+        let totalSize = 0;
+        for (const file of req.files) totalSize += file.size;
+        if (totalSize > MAX_TOTAL_SIZE)
+          return res
+            .status(413)
+            .json({ message: "Total file size exceeds 100MB" });
+      }
       if (err instanceof multer.MulterError) {
         return res.status(400).json({ error: err.message });
       } else if (err) {
