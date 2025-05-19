@@ -86,7 +86,7 @@ const createServer = () => {
 
   // Rate Limiter
   const rateLimiter = new RateLimiterMemory({
-    points: 60,
+    points: 120,
     duration: 60,
   });
 

@@ -1,7 +1,7 @@
 import express from "express";
 import controller from "../controllers/admin.controller";
 import auth from "../functions/auth";
-import { payload, payloads } from "../utils/validation/body";
+import { payload, payloadForUpdate, payloads } from "../utils/validation/body";
 import multer from "multer";
 import { allowedExtensions, MAX_TOTAL_SIZE } from "../utils/constants";
 import { validateParams, Params } from "../utils/validation/params";
@@ -70,6 +70,32 @@ adminRouter.post(
   controller.uploadPost
 );
 
+// bug uri:
+// daca modifica numa text si imagine nu pusca
+
+adminRouter.patch(
+  "/post/:id",
+  auth(["admin"]),
+  validateParams(Params.posts.id),
+  (req, res, next) => {
+    upload.array("files", MAX_TOTAL_SIZE)(req, res, (err: any) => {
+      if (Array.isArray(req.files) && req.files.length) {
+        let totalSize = 0;
+        for (const file of req.files as Express.Multer.File[])
+          totalSize += file.size;
+        if (totalSize > MAX_TOTAL_SIZE * 1024 * 1024 * 10)
+          // 100MB total
+          return res
+            .status(413)
+            .json({ error: "Total file size exceeds 100MB" });
+      }
+      if (err) return res.status(400).json({ error: err.message });
+      next();
+    });
+  },
+  payloadForUpdate(payloads.admin.uploadImagesForUpdate),
+  controller.updatePost
+);
 adminRouter.delete(
   "/post/:id",
   auth(["admin"]),

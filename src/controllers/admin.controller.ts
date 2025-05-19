@@ -9,6 +9,7 @@ import env from "../config";
 import postModel from "../database/models/post.model";
 import { Types } from "mongoose";
 import * as fs from "fs/promises";
+import includesAll from "../utils/includes_all";
 
 const login = async (req: Request, res: Response) => {
   try {
@@ -166,6 +167,8 @@ const deletePost = async (req: Request, res: Response) => {
 
 const updatePost = async (req: Request, res: Response) => {
   try {
+    console.log("here controller");
+
     const files = req.files as Express.Multer.File[];
     const { title, content, category, photosToDelete } = JSON.parse(
       req.body.data
@@ -174,19 +177,40 @@ const updatePost = async (req: Request, res: Response) => {
     const { id } = req.params;
     const post = await postModel.findById({ _id: id });
 
-    if (!post) return res.status(404).json({ error: "Post not found!" });
+    if (!post) {
+      for (const img of photosToDelete)
+        await fs.unlink(`uploads/${img}`).catch(() => {});
+
+      return res.status(404).json({ error: "Post not found!" });
+    }
 
     if (files && files.length) {
       for (const img of imageNames) post.imageNames.push(img);
     }
 
-    if ((photosToDelete as string[]).length) {
-      for (const img of imageNames)
+    console.log("1: ", post.imageNames);
+
+    if ((photosToDelete as string[])?.length && photosToDelete) {
+      if (!includesAll<string>(post.imageNames, photosToDelete)) {
+        for (const img of photosToDelete)
+          await fs.unlink(`uploads/${img}`).catch(() => {});
+        for (const img of post.imageNames)
+          await fs.unlink(`uploads/${img}`).catch(() => {});
+        post.imageNames = post.imageNames.filter(
+          (el) => !photosToDelete.includes(el)
+        );
+        return res.status(400).json({
+          message: "Photo to delete not in image list!",
+        });
+      }
+      for (const img of files)
         await fs.unlink(`uploads/${img}`).catch(() => {});
-      post.imageNames = post.imageNames.filter((el) =>
-        photosToDelete.includes(el)
+      post.imageNames = post.imageNames.filter(
+        (el) => !photosToDelete.includes(el)
       );
     }
+
+    console.log("2: ", post.imageNames);
 
     post.title = title ? title : post.title;
     post.content = content ? content : post.content;
@@ -205,6 +229,8 @@ const updatePost = async (req: Request, res: Response) => {
         });
       });
   } catch (error) {
+    console.log("eroare skibidi: ", error);
+
     return res.status(500).json({
       error: "Something went wrong!",
     });

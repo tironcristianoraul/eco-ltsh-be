@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import Joi, { ObjectSchema } from "joi";
 import regex from "../regex/regex";
 import fs from "fs/promises";
+import { MAX_TOTAL_SIZE } from "../constants";
 
 export const payload =
   (body: ObjectSchema) =>
@@ -24,6 +25,64 @@ export const payload =
             const imagePaths = files.map((file) => file.path);
 
             for (const path of imagePaths) fs.unlink(path);
+          }
+          return res.status(500).json({
+            error: `${error}`,
+          });
+        });
+    } catch (error) {
+      return res.status(500).json({
+        error: `${error}`,
+      });
+    }
+  };
+
+export const payloadForUpdate =
+  (body: ObjectSchema) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      console.log("here validate");
+
+      await body
+        .validateAsync(req.body.data ? JSON.parse(req.body.data) : req.body)
+        .then(() => {
+          const files = req.files as Express.Multer.File[];
+          console.log(files);
+
+          const { photosToDelete } = JSON.parse(req.body.data);
+
+          const newFilesLength = files.length;
+          if (!photosToDelete || !photosToDelete.length) return next();
+          const deleteLength = (photosToDelete as string[]).length;
+          if (!files || files.length === 0) {
+            if (deleteLength > MAX_TOTAL_SIZE) {
+              const imagePaths = files.map((file) => file.path);
+
+              for (const path of imagePaths) fs.unlink(path);
+              return res
+                .status(400)
+                .json({ error: "You cannot delete more than you have!" });
+            }
+          }
+
+          if (-deleteLength + newFilesLength > 0) {
+            const imagePaths = files.map((file) => file.path);
+
+            for (const path of imagePaths) fs.unlink(path);
+            return res.status(400).json({
+              error: "You cannot upload more than 10 files!",
+            });
+          }
+          next();
+        })
+        .catch((error) => {
+          if (req.body.data) {
+            // We're in the case where we upload something right now.
+            const files = req.files as Express.Multer.File[];
+            if (files && files.length) {
+              const imagePaths = files.map((file) => file.path);
+              for (const path of imagePaths) fs.unlink(path);
+            }
           }
           return res.status(500).json({
             error: `${error}`,
@@ -61,6 +120,12 @@ export const payloads = {
       title: Joi.string().required().max(64),
       content: Joi.string().required(),
       category: Joi.string().required().max(32),
+    }),
+    uploadImagesForUpdate: Joi.object({
+      photosToDelete: Joi.array().items(Joi.string().required()).min(1).max(10),
+      title: Joi.string().max(64),
+      content: Joi.string(),
+      category: Joi.string().max(32),
     }),
   },
 };
