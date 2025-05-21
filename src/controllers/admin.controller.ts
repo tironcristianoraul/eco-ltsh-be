@@ -167,50 +167,36 @@ const deletePost = async (req: Request, res: Response) => {
 
 const updatePost = async (req: Request, res: Response) => {
   try {
-    console.log("here controller");
-
     const files = req.files as Express.Multer.File[];
     const { title, content, category, photosToDelete } = JSON.parse(
       req.body.data
     );
     const imageNames = files.map((file) => file.filename);
+    const imagePaths = files.map((file) => file.path);
+
     const { id } = req.params;
     const post = await postModel.findById({ _id: id });
-
     if (!post) {
-      for (const img of photosToDelete)
-        await fs.unlink(`uploads/${img}`).catch(() => {});
+      for (const path of imagePaths) fs.unlink(path);
 
       return res.status(404).json({ error: "Post not found!" });
     }
 
-    if (files && files.length) {
+    if (files && files.length)
       for (const img of imageNames) post.imageNames.push(img);
-    }
-
-    console.log("1: ", post.imageNames);
 
     if ((photosToDelete as string[])?.length && photosToDelete) {
-      if (!includesAll<string>(post.imageNames, photosToDelete)) {
-        for (const img of photosToDelete)
-          await fs.unlink(`uploads/${img}`).catch(() => {});
-        for (const img of post.imageNames)
-          await fs.unlink(`uploads/${img}`).catch(() => {});
-        post.imageNames = post.imageNames.filter(
-          (el) => !photosToDelete.includes(el)
-        );
-        return res.status(400).json({
-          message: "Photo to delete not in image list!",
-        });
-      }
-      for (const img of files)
-        await fs.unlink(`uploads/${img}`).catch(() => {});
-      post.imageNames = post.imageNames.filter(
-        (el) => !photosToDelete.includes(el)
-      );
+      for (const photo of photosToDelete)
+        if (post.imageNames.includes(photo)) {
+          post.imageNames = post.imageNames.filter((x) => x !== photo);
+          await fs.unlink(`uploads/${photo}`);
+        } else {
+          for (const path of imagePaths) fs.unlink(path);
+          return res
+            .status(400)
+            .json({ error: "Photo you were trying to delete does not exist!" });
+        }
     }
-
-    console.log("2: ", post.imageNames);
 
     post.title = title ? title : post.title;
     post.content = content ? content : post.content;

@@ -83,7 +83,7 @@ adminRouter.patch(
         let totalSize = 0;
         for (const file of req.files as Express.Multer.File[])
           totalSize += file.size;
-        if (totalSize > MAX_TOTAL_SIZE * 1024 * 1024 * 10)
+        if (totalSize > MAX_TOTAL_SIZE * 1024 * 1024)
           // 100MB total
           return res
             .status(413)

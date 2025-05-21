@@ -4,6 +4,7 @@ import Joi, { ObjectSchema } from "joi";
 import regex from "../regex/regex";
 import fs from "fs/promises";
 import { MAX_TOTAL_SIZE } from "../constants";
+import postModel from "../../database/models/post.model";
 
 export const payload =
   (body: ObjectSchema) =>
@@ -41,13 +42,22 @@ export const payloadForUpdate =
   (body: ObjectSchema) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("here validate");
-
       await body
         .validateAsync(req.body.data ? JSON.parse(req.body.data) : req.body)
-        .then(() => {
+        .then(async () => {
           const files = req.files as Express.Multer.File[];
           console.log(files);
+          const imagePaths = files.map((file) => file.path);
+
+          const { id } = req.params;
+          const post = await postModel.findById({ _id: id });
+          if (!post) {
+            for (const path of imagePaths) fs.unlink(path);
+
+            return res.status(404).json({ error: "Post not found!" });
+          }
+
+          const photoNr = post.imageNames.length;
 
           const { photosToDelete } = JSON.parse(req.body.data);
 
@@ -55,7 +65,7 @@ export const payloadForUpdate =
           if (!photosToDelete || !photosToDelete.length) return next();
           const deleteLength = (photosToDelete as string[]).length;
           if (!files || files.length === 0) {
-            if (deleteLength > MAX_TOTAL_SIZE) {
+            if (deleteLength > photoNr) {
               const imagePaths = files.map((file) => file.path);
 
               for (const path of imagePaths) fs.unlink(path);
@@ -64,6 +74,11 @@ export const payloadForUpdate =
                 .json({ error: "You cannot delete more than you have!" });
             }
           }
+
+          // if (files && files.length && !photoNr)
+          //   return res
+          //     .status(400)
+          //     .json({ error: "You did not specify number of photos!" });
 
           if (-deleteLength + newFilesLength > 0) {
             const imagePaths = files.map((file) => file.path);
