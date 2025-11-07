@@ -9,6 +9,7 @@ import env from "../config";
 import postModel from "../database/models/post.model";
 import { Types } from "mongoose";
 import * as fs from "fs/promises";
+import * as fsSync from "fs";
 import includesAll from "../utils/includes_all";
 
 const login = async (req: Request, res: Response) => {
@@ -189,7 +190,11 @@ const updatePost = async (req: Request, res: Response) => {
       for (const photo of photosToDelete)
         if (post.imageNames.includes(photo)) {
           post.imageNames = post.imageNames.filter((x) => x !== photo);
-          await fs.unlink(`uploads/${photo}`);
+          try {
+            await fs.unlink(`uploads/${photo}`);
+          } catch (error) {
+            //
+          }
         } else {
           for (const path of imagePaths) fs.unlink(path);
           return res
