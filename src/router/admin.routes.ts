@@ -1,5 +1,6 @@
 import express from "express";
 import controller from "../controllers/admin.controller";
+import plantController from "../controllers/plant.controller";
 import auth from "../functions/auth";
 import { payload, payloadForUpdate, payloads } from "../utils/validation/body";
 import multer from "multer";
@@ -101,6 +102,20 @@ adminRouter.delete(
   auth(["admin"]),
   validateParams(Params.posts.id),
   controller.deletePost
+);
+
+// plants
+//to do adaugare validare joi 67
+adminRouter.post("/plant", plantController.uploadPlant);
+adminRouter.delete(
+  "/plant/:id",
+  validateParams(Params.posts.id),
+  plantController.deletePlant
+);
+adminRouter.patch(
+  "/plant/:id",
+  validateParams(Params.posts.id),
+  plantController.updatePlant
 );
 
 adminRouter.use("/auth", adminAuthRouter);

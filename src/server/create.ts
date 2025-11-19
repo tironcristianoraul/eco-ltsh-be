@@ -11,14 +11,20 @@ import { RateLimiterMemory } from "rate-limiter-flexible";
 const createServer = () => {
   const router = express();
 
-  const allowedOrigins = ["http://127.0.0.1:5173", "http://localhost:5173"];
+  const allowedOrigins = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://95.76.109.39",
+  ];
 
   // CORS Policy Settings
   router.use(
     cors({
       origin: allowedOrigins,
       credentials: true,
-      allowedHeaders: "Content-Type,Authorization",
+      allowedHeaders: [
+        "Content-Type,Authorization,Cross-Origin-Resource-Policy",
+      ],
     })
   );
 
@@ -72,7 +78,11 @@ const createServer = () => {
   // });
 
   // Additional headers
-  router.use(helmet());
+  router.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    })
+  );
 
   router.use(express.json({ limit: "100mb" }));
   router.use(express.urlencoded({ limit: "100mb", extended: true }));
@@ -104,7 +114,7 @@ const createServer = () => {
 
   router.use("/eco-ltsh/api", mainRouter);
 
-  router.listen(config.server.port, () => {
+  router.listen(config.server.port, "0.0.0.0", () => {
     console.log(
       chalk`🚀 {rgb(0,0,255) Eco - LTSH backend is listening on port ${
         config.server.port

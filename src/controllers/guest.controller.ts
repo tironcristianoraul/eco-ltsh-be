@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import postModel from "../database/models/post.model";
+import plantModel from "../database/models/plant.model";
+import qrcode from "qrcode";
 
 const getPosts = async (req: Request, res: Response) => {
   try {
@@ -38,9 +40,63 @@ const getPost = async (req: Request, res: Response) => {
   }
 };
 
+const getPlants = async (req: Request, res: Response) => {
+  try {
+    const plants = await plantModel.find({});
+
+    if (!plants) return res.status(404).json({ error: "No plants found!" });
+
+    return res.status(200).json({ message: "Plants retrieved!", plants });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Something went wrong!",
+    });
+  }
+};
+
+const getPlant = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const plant = await plantModel.findById({ _id: id });
+
+    if (!plant) return res.status(404).json({ error: "No plant found!" });
+
+    return res
+      .status(200)
+      .json({ message: "Plant retrieved!", plant: plant.toObject() });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Something went wrong!",
+    });
+  }
+};
+
+const generateQR = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const plant = await plantModel.findOne({ _id: id });
+    if (!plant) return res.status(404).json({ error: "Plant not found!" });
+    const qr = await qrcode.toDataURL(plant.link);
+
+    return res
+      .status(200)
+      .json({ qr, message: "QR Code created successfully!" });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Something went wrong!",
+    });
+  }
+};
+
 const controller = {
   getPosts,
   getPost,
+
+  getPlants,
+  getPlant,
+
+  generateQR,
 };
 
 export default controller;
