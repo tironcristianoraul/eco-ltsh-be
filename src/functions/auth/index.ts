@@ -85,16 +85,16 @@ const auth =
         return res
           .cookie("accessToken", access, {
             maxAge: 1000 * 60 * 60 * 24, // 1d
-            sameSite: "none",
-            secure: true,
+            sameSite: env.server.mode === "testing" ? "none" : "lax",
+            secure: env.server.mode === "testing",
             path: "/",
             expires: addDays(new Date(), 15),
             httpOnly: true,
           })
           .cookie("refreshToken", refresh, {
             maxAge: 1000 * 60 * 60 * 24 * 365, // 1yr
-            sameSite: "none",
-            secure: true,
+            sameSite: env.server.mode === "testing" ? "none" : "lax",
+            secure: env.server.mode === "testing",
             path: "/",
             httpOnly: true,
             expires: addYears(new Date(), 1),
