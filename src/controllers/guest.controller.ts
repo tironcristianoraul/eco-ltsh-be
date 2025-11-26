@@ -10,8 +10,8 @@ const getPosts = async (req: Request, res: Response) => {
     if (!posts) return res.status(404).json({ error: "No posts found!" });
 
     const final = posts.map((post) => {
-      const { _id, title, imageNames } = post.toObject();
-      return { _id, title, image: imageNames[0] };
+      const { _id, title, imageNames, category } = post.toObject();
+      return { _id, title, category, image: imageNames[0] };
     });
 
     return res.status(200).json({ message: "Posts retrieved!", posts: final });

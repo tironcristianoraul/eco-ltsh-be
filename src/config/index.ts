@@ -27,7 +27,7 @@ const env = {
     database:
       MODE === "testing"
         ? `${DATABASE}/dev?retryWrites=true&w=majority&appName=main`
-        : `${DATABASE}/dev?retryWrites=true&w=majority&appName=main`,
+        : `${DATABASE}?retryWrites=true&w=majority&appName=main`,
     mode: MODE,
     encryption_key: ENCRYPTION_KEY,
     url:
