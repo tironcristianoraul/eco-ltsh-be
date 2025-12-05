@@ -25,7 +25,7 @@ const createServer = () => {
       origin: allowedOrigins,
       credentials: true,
       allowedHeaders: [
-        "Content-Type,Authorization,Cross-Origin-Resource-Policy",
+        "Content-Type,Authorization,Cross-Origin-Resource-Policy,Access-Control-Allow-Origin",
       ],
     })
   );
@@ -34,6 +34,7 @@ const createServer = () => {
     try {
       if (req.method === "OPTIONS") {
         const origin = req.get("Origin");
+        console.log(origin);
 
         // Check if origin is undefined
         if (origin === undefined) {
