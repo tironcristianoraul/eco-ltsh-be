@@ -39,10 +39,8 @@ const createServer = () => {
         if (origin === undefined) {
           // Handle the case where Origin is undefined
           return res.status(400).json(
-            getRes({
-              error: "Bad Request",
-              message: "Origin header is missing or undefined.",
-            })
+            error: "Bad Request",
+            message: "Origin header is missing or undefined.",
           );
         }
 
@@ -72,9 +70,7 @@ const createServer = () => {
     } catch (err) {
       // Handle any unexpected errors
       return res.status(500).json(
-        getRes({
-          error: "Internal Server Error",
-        })
+        { error: "Internal Server Error" },
       );
     }
   });
