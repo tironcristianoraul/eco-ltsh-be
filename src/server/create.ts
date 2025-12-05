@@ -19,43 +19,25 @@ const createServer = () => {
     "https://eco-ltsh-epwdje5gs-tiron9504s-projects.vercel.app",
   ];
 
-  // CORS Policy Settings
+  // CORS Policy Settings (fixed)
   router.use(
     cors({
-      origin: true,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true); // allow non-browser clients
+
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+
+        return callback(new Error("Not allowed by CORS"));
+      },
       credentials: true,
-      methods: "GET,POST,PUT,DELETE,OPTIONS",
-      allowedHeaders: [
-        "Content-Type,Authorization,Cross-Origin-Resource-Policy,Access-Control-Allow-Origin",
-      ],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
     })
   );
 
-  router.options("*", cors());
-
-  router.use((req, res, next) => {
-    try {
-      if (req.method === "OPTIONS") {
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader(
-          "Access-Control-Allow-Methods",
-          "GET,POST,PUT,DELETE,OPTIONS"
-        );
-        res.setHeader(
-          "Access-Control-Allow-Headers",
-          "Content-Type, Authorization"
-        );
-        return res.status(200).end();
-      }
-
-      res.setHeader("Access-Control-Allow-Origin", "*");
-
-      next(); // Continue to next middleware/route handler for non-OPTIONS requests
-    } catch (err) {
-      // Handle any unexpected errors
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
+  router.options("*", cors()); // preflight
 
   // Additional headers
   router.use(
@@ -71,8 +53,9 @@ const createServer = () => {
   // disable x-powered-by for anti-tracking
   router.disable("x-powered-by");
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  config.server.mode === "testing" && router.use(customLogger());
+  if (config.server.mode === "testing") {
+    router.use(customLogger());
+  }
 
   // Rate Limiter
   const rateLimiter = new RateLimiterMemory({
@@ -84,9 +67,7 @@ const createServer = () => {
     const ip = req.ip || "127.0.0.1";
     rateLimiter
       .consume(ip)
-      .then(() => {
-        next();
-      })
+      .then(() => next())
       .catch(() => {
         res.status(429).json({ error: "Too many requests! Try again later!" });
       });
