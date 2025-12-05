@@ -15,6 +15,7 @@ const createServer = () => {
     "http://127.0.0.1:5173",
     "http://localhost:5173",
     "http://95.76.109.39",
+    "https://eco-ltsh.vercel.app",
   ];
 
   // CORS Policy Settings
