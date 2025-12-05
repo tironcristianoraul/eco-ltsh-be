@@ -36,39 +36,19 @@ const createServer = () => {
   router.use((req, res, next) => {
     try {
       if (req.method === "OPTIONS") {
-        const origin = req.get("Origin");
-        console.log(origin);
-
-        // Check if origin is undefined
-        if (origin === undefined) {
-          // Handle the case where Origin is undefined
-          return res.status(400).json({
-            error: "Bad Request",
-            message: "Origin header is missing or undefined.",
-          });
-        }
-
-        // Check if the origin is in the allowedOrigins list
-        if (allowedOrigins.includes(origin)) {
-          res.set("Access-Control-Allow-Origin", origin);
-        } else {
-          // Return a 403 Forbidden error for disallowed origins
-          return res.status(403).json({
-            error: "Forbidden",
-            message: "The origin is not allowed by CORS policy.",
-          });
-        }
-
-        // Set CORS headers for preflight request
-        res.set(
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader(
           "Access-Control-Allow-Methods",
-          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          "GET,POST,PUT,DELETE,OPTIONS"
         );
-        res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        res.set("Access-Control-Allow-Credentials", "true");
-
-        return res.status(204).send(); // No Content for OPTIONS request
+        res.setHeader(
+          "Access-Control-Allow-Headers",
+          "Content-Type, Authorization"
+        );
+        return res.status(200).end();
       }
+
+      res.setHeader("Access-Control-Allow-Origin", "*");
 
       next(); // Continue to next middleware/route handler for non-OPTIONS requests
     } catch (err) {
