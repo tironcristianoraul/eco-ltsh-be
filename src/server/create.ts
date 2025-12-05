@@ -22,7 +22,7 @@ const createServer = () => {
   // CORS Policy Settings
   router.use(
     cors({
-      origin: allowedOrigins,
+      origin: true,
       credentials: true,
       allowedHeaders: [
         "Content-Type,Authorization,Cross-Origin-Resource-Policy,Access-Control-Allow-Origin",
