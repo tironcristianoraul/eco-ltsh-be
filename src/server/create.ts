@@ -38,10 +38,10 @@ const createServer = () => {
         // Check if origin is undefined
         if (origin === undefined) {
           // Handle the case where Origin is undefined
-          return res.status(400).json(
+          return res.status(400).json({
             error: "Bad Request",
             message: "Origin header is missing or undefined.",
-          );
+          });
         }
 
         // Check if the origin is in the allowedOrigins list
@@ -69,9 +69,7 @@ const createServer = () => {
       next(); // Continue to next middleware/route handler for non-OPTIONS requests
     } catch (err) {
       // Handle any unexpected errors
-      return res.status(500).json(
-        { error: "Internal Server Error" },
-      );
+      return res.status(500).json({ error: "Internal Server Error" });
     }
   });
 
