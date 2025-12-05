@@ -24,11 +24,14 @@ const createServer = () => {
     cors({
       origin: true,
       credentials: true,
+      methods: "GET,POST,PUT,DELETE,OPTIONS",
       allowedHeaders: [
         "Content-Type,Authorization,Cross-Origin-Resource-Policy,Access-Control-Allow-Origin",
       ],
     })
   );
+
+  router.options("*", cors());
 
   router.use((req, res, next) => {
     try {
