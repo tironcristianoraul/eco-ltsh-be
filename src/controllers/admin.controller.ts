@@ -40,16 +40,16 @@ const login = async (req: Request, res: Response) => {
     return res
       .cookie("accessToken", token.access!, {
         httpOnly: true,
-        secure: env.server.mode === "testing",
-        sameSite: env.server.mode === "testing" ? "none" : "lax",
+        secure: true,
+        sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24 * 15,
         expires: addDays(new Date(), 15),
         path: "/",
       })
       .cookie("refreshToken", token.refresh, {
         httpOnly: true,
-        secure: env.server.mode === "testing",
-        sameSite: env.server.mode === "testing" ? "none" : "lax",
+        secure: true,
+        sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24 * 365,
         path: "/",
         expires: addYears(new Date(), 1),
