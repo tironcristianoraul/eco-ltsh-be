@@ -158,31 +158,16 @@ const deletePost = async (req: Request, res: Response) => {
 
 const updatePost = async (req: Request, res: Response) => {
   try {
-    const { title, content, category, photosToDelete } = req.body;
+    const { title, content, category, imageLinks } = req.body;
 
     const { id } = req.params;
     const post = await postModel.findById({ _id: id });
     if (!post) return res.status(404).json({ error: "Post not found!" });
 
-    if ((photosToDelete as string[])?.length && photosToDelete) {
-      for (const photo of photosToDelete)
-        if (post.imageLinks.includes(photo)) {
-          post.imageLinks = post.imageLinks.filter((x) => x !== photo);
-          try {
-            await fs.unlink(`uploads/${photo}`);
-          } catch (error) {
-            //
-          }
-        } else {
-          return res
-            .status(400)
-            .json({ error: "Photo you were trying to delete does not exist!" });
-        }
-    }
-
     post.title = title ? title : post.title;
     post.content = content ? content : post.content;
     post.category = category ? category : post.category;
+    post.imageLinks = imageLinks ? imageLinks : post.imageLinks;
 
     await post
       .save({ validateModifiedOnly: true })

@@ -71,7 +71,7 @@ export const payloads = {
       imageLinks: Joi.array().items(Joi.string()).min(1).max(10),
     }),
     uploadImagesForUpdate: Joi.object({
-      photosToDelete: Joi.array().items(Joi.string().required()).min(1).max(10),
+      imageLinks: Joi.array().items(Joi.string()).min(1).max(10),
       title: Joi.string().max(64),
       content: Joi.string(),
       category: Joi.string().max(32),
