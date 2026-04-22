@@ -182,8 +182,6 @@ const updatePost = async (req: Request, res: Response) => {
         });
       });
   } catch (error) {
-    console.log("eroare skibidi: ", error);
-
     return res.status(500).json({
       error: "Something went wrong!",
     });

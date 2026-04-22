@@ -24,25 +24,6 @@ export const payload =
     }
   };
 
-export const payloadForUpdate =
-  (body: ObjectSchema) =>
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await body
-        .validateAsync(req.body.data ? JSON.parse(req.body.data) : req.body)
-        .then(next)
-        .catch((error) => {
-          return res.status(500).json({
-            error: `${error}`,
-          });
-        });
-    } catch (error) {
-      return res.status(500).json({
-        error: `${error}`,
-      });
-    }
-  };
-
 const { password } = regex;
 
 export const payloads = {

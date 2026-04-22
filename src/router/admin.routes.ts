@@ -2,7 +2,7 @@ import express from "express";
 import controller from "../controllers/admin.controller";
 import plantController from "../controllers/plant.controller";
 import auth from "../functions/auth";
-import { payload, payloadForUpdate, payloads } from "../utils/validation/body";
+import { payload, payloads } from "../utils/validation/body";
 import multer from "multer";
 import { allowedExtensions, MAX_TOTAL_SIZE } from "../utils/constants";
 import { validateParams, Params } from "../utils/validation/params";
@@ -28,7 +28,7 @@ adminRouter.patch(
   "/post/:id",
   auth(["admin"]),
   validateParams(Params.posts.id),
-  payloadForUpdate(payloads.admin.uploadImagesForUpdate),
+  payload(payloads.admin.uploadImagesForUpdate),
   controller.updatePost
 );
 adminRouter.delete(
