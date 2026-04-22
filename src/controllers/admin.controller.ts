@@ -102,7 +102,7 @@ const logout = async (req: Request, res: Response) => {
 
 const uploadPost = async (req: Request, res: Response) => {
   try {
-    const { title, content, category, imageLinks } = JSON.parse(req.body.data);
+    const { title, content, category, imageLinks } = req.body;
 
     const post = new postModel({
       _id: new Types.ObjectId(),
@@ -158,9 +158,7 @@ const deletePost = async (req: Request, res: Response) => {
 
 const updatePost = async (req: Request, res: Response) => {
   try {
-    const { title, content, category, photosToDelete } = JSON.parse(
-      req.body.data
-    );
+    const { title, content, category, photosToDelete } = req.body;
 
     const { id } = req.params;
     const post = await postModel.findById({ _id: id });
