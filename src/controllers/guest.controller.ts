@@ -11,7 +11,7 @@ const getPosts = async (req: Request, res: Response) => {
 
     const final = posts.map((post) => {
       const { _id, title, imageLinks, category } = post.toObject();
-      return { _id, title, category, image: imageLinks[0] };
+      return { _id, title, category, imageLinks: [imageLinks[0]] };
     });
 
     return res.status(200).json({ message: "Posts retrieved!", posts: final });
