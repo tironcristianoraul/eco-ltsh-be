@@ -102,18 +102,11 @@ const logout = async (req: Request, res: Response) => {
 
 const uploadPost = async (req: Request, res: Response) => {
   try {
-    const files = req.files as Express.Multer.File[];
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: "No images uploaded." });
-    }
-
-    const { title, content, category } = JSON.parse(req.body.data);
-
-    const imageNames = files.map((file) => file.filename);
+    const { title, content, category, imageLinks } = JSON.parse(req.body.data);
 
     const post = new postModel({
       _id: new Types.ObjectId(),
-      imageNames,
+      imageLinks,
       title,
       content,
       category,
@@ -148,11 +141,8 @@ const deletePost = async (req: Request, res: Response) => {
 
     await post
       .deleteOne()
-      .then(async () => {
-        const images = post.imageNames;
-        for (const img of images)
-          await fs.unlink(`uploads/${img}`).catch(() => {});
-        res.status(200).json({ message: "Post deleted successfully!" });
+      .then(() => {
+        return res.status(200).json({ message: "Post deleted!" });
       })
       .catch((e) => {
         return res.status(500).json({
@@ -168,35 +158,24 @@ const deletePost = async (req: Request, res: Response) => {
 
 const updatePost = async (req: Request, res: Response) => {
   try {
-    const files = req.files as Express.Multer.File[];
     const { title, content, category, photosToDelete } = JSON.parse(
       req.body.data
     );
-    const imageNames = files.map((file) => file.filename);
-    const imagePaths = files.map((file) => file.path);
 
     const { id } = req.params;
     const post = await postModel.findById({ _id: id });
-    if (!post) {
-      for (const path of imagePaths) fs.unlink(path);
-
-      return res.status(404).json({ error: "Post not found!" });
-    }
-
-    if (files && files.length)
-      for (const img of imageNames) post.imageNames.push(img);
+    if (!post) return res.status(404).json({ error: "Post not found!" });
 
     if ((photosToDelete as string[])?.length && photosToDelete) {
       for (const photo of photosToDelete)
-        if (post.imageNames.includes(photo)) {
-          post.imageNames = post.imageNames.filter((x) => x !== photo);
+        if (post.imageLinks.includes(photo)) {
+          post.imageLinks = post.imageLinks.filter((x) => x !== photo);
           try {
             await fs.unlink(`uploads/${photo}`);
           } catch (error) {
             //
           }
         } else {
-          for (const path of imagePaths) fs.unlink(path);
           return res
             .status(400)
             .json({ error: "Photo you were trying to delete does not exist!" });

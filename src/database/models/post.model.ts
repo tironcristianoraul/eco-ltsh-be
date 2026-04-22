@@ -6,7 +6,7 @@ import DOMPurify from "dompurify";
 const postSchema: Schema = new Schema(
   {
     _id: Types.ObjectId,
-    imageNames: { type: [String], required: true },
+    imageLinks: { type: [String], required: true },
     title: { type: String, required: true, index: true },
     content: { type: String, required: true },
     category: { type: String, required: true },

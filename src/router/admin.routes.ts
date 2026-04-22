@@ -7,38 +7,6 @@ import multer from "multer";
 import { allowedExtensions, MAX_TOTAL_SIZE } from "../utils/constants";
 import { validateParams, Params } from "../utils/validation/params";
 
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    return cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    const image = file;
-
-    if (image.originalname.includes("/"))
-      return cb(new Error("Your filename cannot contain a '/'."));
-
-    const imageParts = image.originalname.split(".");
-    const imagePartsLength = imageParts.length;
-    const imageExtension = imageParts[imagePartsLength - 1];
-
-    if (!allowedExtensions.includes(imageExtension))
-      return cb(
-        new Error(
-          `Invalid image extension. Allowed formats: ${allowedExtensions.join(
-            ", "
-          )}`
-        )
-      );
-
-    return cb(null, true);
-  },
-});
-
 const adminAuthRouter = express.Router();
 
 adminAuthRouter.post("/login", payload(payloads.admin.login), controller.login);
@@ -49,24 +17,6 @@ const adminRouter = express.Router();
 adminRouter.post(
   "/upload",
   auth(["admin"]),
-  (req, res, next) => {
-    upload.array("files", 10)(req, res, (err) => {
-      if (Array.isArray(req.files) && req.files.length) {
-        let totalSize = 0;
-        for (const file of req.files) totalSize += file.size;
-        if (totalSize > MAX_TOTAL_SIZE)
-          return res
-            .status(413)
-            .json({ message: "Total file size exceeds 100MB" });
-      }
-      if (err instanceof multer.MulterError) {
-        return res.status(400).json({ error: err.message });
-      } else if (err) {
-        return res.status(400).json({ error: err.message });
-      }
-      next();
-    });
-  },
   payload(payloads.admin.uploadImages),
   controller.uploadPost
 );
@@ -78,22 +28,6 @@ adminRouter.patch(
   "/post/:id",
   auth(["admin"]),
   validateParams(Params.posts.id),
-  (req, res, next) => {
-    upload.array("files", MAX_TOTAL_SIZE)(req, res, (err: any) => {
-      if (Array.isArray(req.files) && req.files.length) {
-        let totalSize = 0;
-        for (const file of req.files as Express.Multer.File[])
-          totalSize += file.size;
-        if (totalSize > MAX_TOTAL_SIZE * 1024 * 1024)
-          // 100MB total
-          return res
-            .status(413)
-            .json({ error: "Total file size exceeds 100MB" });
-      }
-      if (err) return res.status(400).json({ error: err.message });
-      next();
-    });
-  },
   payloadForUpdate(payloads.admin.uploadImagesForUpdate),
   controller.updatePost
 );

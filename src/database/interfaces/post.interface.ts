@@ -2,7 +2,7 @@ import { Document, Types } from "mongoose";
 
 export default interface IPost extends Document {
   _id: Types.ObjectId;
-  imageNames: string[];
+  imageLinks: string[];
   title: string;
   content: string;
   category: string;
